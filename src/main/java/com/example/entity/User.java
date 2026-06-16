@@ -20,7 +20,7 @@ public class User {
     
     private String role;
 
-    // === 乾淨標準的 Getter & Setter ===
+    // ===  Getter & Setter ===
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

@@ -46,10 +46,10 @@ public class ProductController {
         List<Product> products;
         
         if (keyword != null && !keyword.isEmpty()) {
-            // 🌟 只搜尋上架中的商品
+            // 只搜尋上架中的商品
             products = productRepository.findByActiveTrueAndNameContaining(keyword);
         } else {
-            // 🌟 沒有關鍵字時，也只撈出上架中的商品
+            // 沒有關鍵字時，也只撈出上架中的商品
             products = productRepository.findByActiveTrue();
         }
         
@@ -58,7 +58,6 @@ public class ProductController {
         return "index";
     }
     // --- 2. 商品細節 ---
- // 記得要在 ProductController 最上方注入 FavoriteRepository 哦！
     @Autowired
     private FavoriteRepository favoriteRepository; 
 
@@ -85,14 +84,14 @@ public class ProductController {
         }
         model.addAttribute("hasReviewed", hasReviewed);
         
-        // 3. 🌟 新增：購買狀態檢查 (確保你在類別上方有注入 orderRepository)
+        // 3. 購買狀態檢查 
         boolean hasPurchased = false;
         if (user != null) {
             hasPurchased = orderRepository.existsByUserIdAndProductId(user.getId(), id);
         }
         model.addAttribute("hasPurchased", hasPurchased);
         
-        return "detail"; // 確保你的頁面檔名是 detail.html
+        return "detail"; 
     }
     // --- 3. 購物車查看 ---
     @GetMapping("/cart")
@@ -103,7 +102,7 @@ public class ProductController {
         return "cart";
     }
     
- // 🌟 把這段直接加進你原本的 ProductController.java 裡面
+
     @PostMapping("/cart/remove")
     public String removeFromCart(@RequestParam("productId") Long productId, HttpSession session) {
         List<com.example.entity.CartItem> cart = (List<com.example.entity.CartItem>) session.getAttribute("cart");
@@ -117,7 +116,7 @@ public class ProductController {
         return "redirect:/cart";
     }
 
- // --- 4. 加入購物車 (完全對齊 AJAX) ---
+ // --- 4. 加入購物車---
     @PostMapping("/cart/add")
     @ResponseBody
     public String addToCart(@RequestParam Long productId, HttpSession session) {
@@ -128,7 +127,7 @@ public class ProductController {
         Product product = productRepository.findById(productId).orElse(null);
         if (product != null && product.getStock() > 0) {
             
-            // 💡 【防呆機制】：安全地讀取購物車
+            // 安全地讀取購物車
             List<CartItem> cart = new ArrayList<>();
             Object sessionCart = session.getAttribute("cart");
             
@@ -162,8 +161,8 @@ public class ProductController {
             session.setAttribute("cart", cart);
             
             // 回傳成功訊息與最新數量
-         // ❌ 請替換原本的 return "SUCCESS:" + cart.size();
-         // ✅ 改成下方這段：計算購物車內所有物品的數量總和
+         
+         // 計算購物車內所有物品的數量總和
          int totalQuantity = cart.stream().mapToInt(CartItem::getQuantity).sum();
          return "SUCCESS:" + totalQuantity; 
         }
@@ -229,7 +228,7 @@ public class ProductController {
         return "redirect:/";
     }
 
- // --- 6. 評價功能 (已整合「購買後才能評論」防護) ---
+ // --- 6. 評價功能 ---
     @PostMapping("/product/review")
     public String addReview(HttpSession session, 
                             @RequestParam Long productId, 
@@ -240,14 +239,14 @@ public class ProductController {
         User user = (User) session.getAttribute("currentUser");
         if (user == null) return "redirect:/login";
         
-        // 🔒 關卡 1：核心安全防護 —— 檢查買家是否真的有購買過該商品
+        // 檢查買家是否真的有購買過該商品
         boolean hasPurchased = orderRepository.existsByUserIdAndProductId(user.getId(), productId);
         if (!hasPurchased) {
-            // 沒買過就無情彈回，並帶上錯誤標記
+            // 沒買過就彈回，並帶上錯誤標記
             return "redirect:/product/detail/" + productId + "?error=not_purchased";
         }
         
-        // 🌟 關卡 2：後端防安全漏洞 —— 如果已經評過分，直接彈回，不給重複寫入
+        // 防安全漏洞 ，如果已經評過分，直接彈回不給重複寫入
         if (reviewRepository.existsByUserIdAndProductId(user.getId(), productId)) {
             return "redirect:/product/detail/" + productId;
         }
@@ -257,13 +256,13 @@ public class ProductController {
         r.setRating(rating);
         r.setUser(user);
         r.setProduct(productRepository.findById(productId).orElse(null));
-        r.setAnonymous(anonymous); // 🌟 存入是否匿名
+        r.setAnonymous(anonymous); // 存入是否匿名
         
         reviewRepository.save(r);
         return "redirect:/product/detail/" + productId;
     }
     
- // 📦 1. 顯示「上架商品」的網頁表單
+ // 1. 顯示「上架商品」的網頁表單
     @GetMapping("/product/add")
     public String showAddProductForm(Model model) {
         // 產生一個空的 Product 實體，準備讓前端表單綁定資料
@@ -271,7 +270,7 @@ public class ProductController {
         return "add-product"; 
     }
 
-    // 🚀 2. 接收表單送出的資料，並存入資料庫
+    // 2. 接收表單送出的資料，並存入資料庫
     @PostMapping("/product/add")
     public String addProduct(Product product, HttpSession session) {
         // 從 Session 取得目前登入的會員物件
@@ -280,7 +279,7 @@ public class ProductController {
             return "redirect:/login"; // 沒登入就導回登入頁
         }
         
-        // 🌟 綁定賣家 ID 與預設上架狀態
+        // 綁定賣家 ID 與預設上架狀態
         product.setSellerId(currentUser.getId());
         product.setActive(true); 
         
@@ -298,7 +297,7 @@ public class ProductController {
             return "redirect:/login";
         }
         
-        // 🌟 改用 findBySellerId，只撈出自己的商品
+        // 改用 findBySellerId，只撈出自己的商品
         List<Product> myProducts = productRepository.findBySellerId(currentUser.getId());
         model.addAttribute("products", myProducts);
         
@@ -309,9 +308,9 @@ public class ProductController {
         User currentUser = (User) session.getAttribute("currentUser");
         Product product = productRepository.findById(id).orElse(null);
         
-        // 安全檢查：只有當商品存在、使用者已登入，且該商品確實屬於目前登入的會員時，才能修改狀態
+        // 只有當商品存在、使用者已登入，且該商品確實屬於目前登入的會員時，才能修改狀態
         if (product != null && currentUser != null && product.getSellerId().equals(currentUser.getId())) {
-            // 🌟 切換狀態：如果是 true 就變 false (下架)，如果是 false 就變 true (上架)
+            // 切換狀態：如果是 true 就變 false (下架)，如果是 false 就變 true (上架)
             product.setActive(!product.isActive());
             productRepository.save(product);
         }
@@ -333,7 +332,7 @@ public class ProductController {
         }
 
         try {
-            // 🌟 改用 productRepository 透過 ID 找到商品
+            // 改用 productRepository 透過 ID 找到商品
             Product product = productRepository.findById(productId).orElse(null);
             
             if (product != null) {
@@ -341,7 +340,7 @@ public class ProductController {
                 int newStock = product.getStock() + addQuantity;
                 product.setStock(newStock);
                 
-                // 🌟 改用 productRepository 儲存進資料庫
+                // 改用 productRepository 儲存進資料庫
                 productRepository.save(product); 
                 
                 return "SUCCESS:" + newStock;
@@ -356,7 +355,7 @@ public class ProductController {
  // 1. 顯示修改商品的畫面
     @GetMapping("/product/edit/{id}")
     public String showEditForm(@PathVariable("id") Long id, org.springframework.ui.Model model, jakarta.servlet.http.HttpSession session) {
-        // 【安全檢查】沒登入的人不能進來
+        // 安全檢查，沒登入的人不能進來
         var currentUser = session.getAttribute("currentUser");
         if (currentUser == null) {
             return "redirect:/login";
@@ -368,15 +367,15 @@ public class ProductController {
             return "redirect:/"; // 商品不存在就導回首頁
         }
 
-        // model.addAttribute 傳遞給前端 edit.html 渲染
+        // model.addAttribute 傳遞給前端 edit.html 
         model.addAttribute("product", product);
-        return "edit"; // 這會去開啟 src/main/resources/templates/edit.html
+        return "edit"; // 這會去開啟 edit.html
     }
 
     // 2. 接收修改後的表單資料並儲存
     @PostMapping("/product/edit/{id}")
     public String processEdit(@PathVariable("id") Long id, @ModelAttribute("product") Product updatedProduct, jakarta.servlet.http.HttpSession session) {
-        // 【安全檢查】確認有登入
+        // 安全檢查，確認有登入
         var currentUser = session.getAttribute("currentUser");
         if (currentUser == null) {
             return "redirect:/login";
@@ -394,12 +393,12 @@ public class ProductController {
         existingProduct.setPrice(updatedProduct.getPrice());
         existingProduct.setStock(updatedProduct.getStock());
         existingProduct.setImageUrl(updatedProduct.getImageUrl());
-        existingProduct.setActive(updatedProduct.isActive()); // 這邊連帶可以控制要上架還是下架！
+        existingProduct.setActive(updatedProduct.isActive()); // 這邊連帶可以控制要上架還是下架
 
         // 儲存回資料庫
         productRepository.save(existingProduct);
 
-        // 修改完成後，導回該商品的詳情頁（⚠️ 請根據你原本詳情頁的網址去改，如果是 /product/{id} 就改 /product/）
+        // 修改完成後，導回該商品的詳情頁
         return "redirect:/product/detail/" + id; 
     }
 }

@@ -23,7 +23,7 @@ public class FavoriteController {
     @Autowired
     private ProductRepository productRepository;
 
-    // ❤️ 顯示我的收藏清單頁面
+    // 顯示收藏清單頁面
     @GetMapping("/favorites")
     public String showFavorites(HttpSession session, Model model) {
         User user = (User) session.getAttribute("currentUser");
@@ -34,7 +34,7 @@ public class FavoriteController {
         return "favorites"; // 對應 templates/favorites.html
     }
 
-    // ➕ 加入收藏
+    // 加入收藏
     @PostMapping("/favorite/add")
     public String addFavorite(@RequestParam Long productId, HttpSession session) {
         User user = (User) session.getAttribute("currentUser");
@@ -50,7 +50,7 @@ public class FavoriteController {
         return "redirect:/product/detail/" + productId;
     }
 
-    // ❌ 取消收藏 (可從商品頁或收藏清單頁面觸發)
+    // 取消收藏 (可從商品頁或收藏清單頁面觸發)
     @PostMapping("/favorite/remove")
     public String removeFavorite(@RequestParam Long productId, 
                                  @RequestParam(required = false) String from, 

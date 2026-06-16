@@ -4,7 +4,7 @@ public class CartItem {
     private Product product;
     private int quantity;
 
-    // 建構子 (Constructor)
+    // 建構子 
     public CartItem(Product product, int quantity) {
         this.product = product;
         this.quantity = quantity;
@@ -27,8 +27,8 @@ public class CartItem {
         this.quantity = quantity;
     }
     
- // 🌟 手動加上一個完全不帶參數的空建構子
+ // 手動加上一個完全不帶參數的空建構子
     public CartItem() {
-        // 裡面留空沒關係，純粹用來讓 new CartItem() 可以合法過關
+        // 裡面留空，純粹用來讓 new CartItem() 可以合法過關
     }
 }

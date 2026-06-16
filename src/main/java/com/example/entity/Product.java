@@ -14,9 +14,9 @@ public class Product {
     private Double price;
     private Integer stock;
     private String description;
-    private String imageUrl; // 注意：Java習慣用駝峰命名，MySQL是 image_url
+    private String imageUrl; 
 
-    // 🌟 若欄位名稱對不上，請加上 @Column 指定
+
     @Column(name = "image_url") 
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
@@ -33,7 +33,7 @@ public class Product {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     
- // 1. 記錄是哪位會員上架的（假設會員的主鍵是 Long id）
+    // 1. 記錄是哪位會員上架的（假設會員是 Long id）
     private Long sellerId; 
 
     // 2. 記錄商品狀態：true 代表上架中，false 代表已下架

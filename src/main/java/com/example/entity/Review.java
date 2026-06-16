@@ -11,7 +11,6 @@ public class Review {
     
     private String content; // 評價內容
     
-    // --- 新增這一行 ---
     private Integer rating; // 評價星級 (1-5)
     private Boolean anonymous = false;
     @ManyToOne
@@ -28,7 +27,6 @@ public class Review {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
     
-    // --- 新增這兩個方法 ---
     public Integer getRating() { return rating; }
     public void setRating(Integer rating) { this.rating = rating; }
     

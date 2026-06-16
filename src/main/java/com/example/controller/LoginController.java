@@ -51,7 +51,7 @@ public class LoginController {
         return "register"; 
     }
 
-    // 4. 處理會員註冊（精簡版：不分買賣家，統一註冊為 MEMBER）
+    // 4. 處理會員註冊（不分買賣家，統一註冊為 MEMBER）
     @PostMapping("/register")
     public String registerUser(@RequestParam String username, 
                                @RequestParam String password, 

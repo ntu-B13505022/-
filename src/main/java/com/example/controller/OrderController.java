@@ -26,7 +26,7 @@ public class OrderController {
     @Autowired private ProductRepository productRepository;
     @Autowired private OrderDetailRepository orderDetailRepository; // 注入明細工具
 
-    // 🛍️ 1. 處理結帳下單（同一筆消費綁在同個訂單裡）
+    // 1. 處理結帳下單（同一筆消費綁在同個訂單裡）
     @PostMapping("/order/checkout")
     public String checkout(HttpSession session,
                            @RequestParam("receiverName") String receiverName,
@@ -41,7 +41,7 @@ public class OrderController {
         if (cart == null || cart.isEmpty()) return "redirect:/cart";
 
         try {
-            // 🌟 核心修改 A：先建立「一張」主訂單，用來記錄收件資訊
+            // 建立一張主訂單，用來記錄收件資訊
             Order order = new Order();
             order.setUser(currentUser);
             order.setReceiverName(receiverName);
@@ -54,7 +54,7 @@ public class OrderController {
 
             double totalOrderPrice = 0.0;
 
-            // 🌟 核心修改 B：跑迴圈把購物車的每件商品，變成這張主訂單底下的「明細」
+            // 跑迴圈把購物車的每件商品，變成這張主訂單底下的明細
             for (CartItem item : cart) {
                 Product p = item.getProduct();
                 int buyQuantity = item.getQuantity();
@@ -83,7 +83,7 @@ public class OrderController {
                 totalOrderPrice += dbProduct.getPrice() * buyQuantity;
             }
 
-            // 🌟 核心修改 C：將計算出來的最終總金額更新回主訂單
+            // 將計算出來的最終總金額更新回主訂單
             order.setTotalPrice(totalOrderPrice);
             orderRepository.save(order); 
 
@@ -96,13 +96,13 @@ public class OrderController {
         }
     }
 
-    // 📦 2. 查看歷史訂單（撈取主訂單，前端再撈明細）
+    //  查看歷史訂單（撈取主訂單，前端再撈明細）
     @GetMapping("/orders")
     public String viewOrderHistory(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
         if (currentUser == null) return "redirect:/login";
 
-        // 撈出該會員的所有「主訂單」
+        // 撈出該會員的所有主訂單
         List<Order> myOrders = orderRepository.findByUser(currentUser);
 
         // 計算歷史累積總消費
@@ -118,8 +118,8 @@ public class OrderController {
     
     @GetMapping("/seller/orders")
     public String showSellerOrders(jakarta.servlet.http.HttpSession session, org.springframework.ui.Model model) {
-        // 1. 安全檢查：必須登入才能看
-        var currentUser = (User) session.getAttribute("currentUser"); // ⚠️ User 請換成你專案的用戶實體類
+        // 1. 安全檢查，必須登入才能看
+        var currentUser = (User) session.getAttribute("currentUser"); 
         if (currentUser == null) {
             return "redirect:/login";
         }
