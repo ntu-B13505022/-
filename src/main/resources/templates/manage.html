@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品管理與補貨 - JAVA CORE SHOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* 補貨成功小提示框 */
+        #toast-notification {
+            visibility: hidden;
+            min-width: 200px;
+            background-color: #10B981; /* 成功綠色 */
+            color: #fff;
+            text-align: center;
+            border-radius: 12px;
+            padding: 16px 24px;
+            position: fixed;
+            z-index: 1000;
+            right: 30px;
+            bottom: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease, bottom 0.3s ease;
+        }
+        #toast-notification.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 30px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow h-16 flex justify-between items-center px-8 sticky top-0 z-50">
+        <a th:href="@{/}" class="text-xl font-black text-gray-950 tracking-wider">🛒 JAVA CORE SHOP</a>
+        
+        <div class="flex items-center space-x-6">
+            <div th:if="${session.currentUser != null}" class="flex items-center space-x-5">
+                <span class="text-sm text-gray-600">👋 <strong th:text="${session.currentUser.username}">使用者</strong></span>
+                <a th:href="@{/product/add}" class="text-sm text-purple-600 hover:text-purple-800 font-bold transition-colors">➕ 上架商品</a>
+                <a th:href="@{/product/manage}" class="text-sm font-bold border-b-2 border-gray-900 pb-1">⚙️ 商品管理</a>
+                <a th:href="@{/favorites}" class="text-sm font-bold text-pink-600 hover:text-pink-800 transition-colors">❤️ 我的收藏</a>
+                <a th:href="@{/cart}" class="text-sm font-bold text-blue-600 hover:text-blue-800">🛒 購物車</a>
+                <a th:href="@{/orders}" class="text-sm font-bold text-green-600 hover:text-green-800">📦 我的訂單</a>
+                <a th:href="@{/logout}" class="text-sm font-bold text-red-500 hover:text-red-700">登出</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl w-full mx-auto px-8 py-12 flex-grow">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-black text-gray-950 tracking-wide">⚙️ 我的商品管理</h2>
+            <a th:href="@{/product/add}" class="bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-700 transition-colors">
+                ＋ 新增商品
+            </a>
+        </div>
+
+        <div th:if="${#lists.isEmpty(products)}" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center text-gray-400">
+            您目前還沒有上架任何商品哦！
+        </div>
+
+        <div th:if="${!#lists.isEmpty(products)}" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-100 text-sm text-gray-500">
+                        <th class="p-4 font-bold">商品圖片</th>
+                        <th class="p-4 font-bold">商品名稱</th>
+                        <th class="p-4 font-bold text-center">狀態</th>
+                        <th class="p-4 font-bold">售價</th>
+                        <th class="p-4 font-bold text-center">目前庫存</th>
+                        <th class="p-4 font-bold text-center">補貨操作</th>
+                        <th class="p-4 font-bold text-center">商品管理</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-100">
+                    <tr th:each="product : ${products}" class="hover:bg-gray-50 transition-colors" th:classappend="${!product.active} ? 'opacity-75 bg-gray-50' : ''">
+                        <td class="p-4 w-24">
+                            <img th:src="${product.imageUrl}" class="w-16 h-16 object-cover rounded-lg border border-gray-200" th:classappend="${!product.active} ? 'grayscale' : ''">
+                        </td>
+                        <td class="p-4 font-bold text-gray-900" th:text="${product.name}">商品名稱</td>
+                        
+                        <td class="p-4 text-center">
+                            <span th:text="${product.active} ? '販售中' : '已下架'" 
+                                  th:class="${product.active} ? 'text-green-700 font-bold bg-green-100 px-3 py-1 rounded-full text-xs' : 'text-gray-500 font-bold bg-gray-200 px-3 py-1 rounded-full text-xs'">
+                            </span>
+                        </td>
+                        
+                        <td class="p-4 text-blue-600 font-bold" th:text="'NT$ ' + ${product.price}">價格</td>
+                        
+                        <td class="p-4 text-center">
+                            <span th:id="'stock-display-' + ${product.id}" 
+                                  th:class="${product.stock <= 5 ? 'text-red-500 font-black text-lg bg-red-50 px-3 py-1 rounded-lg' : 'text-gray-700 font-bold text-lg'}"
+                                  th:text="${product.stock}">
+                                0
+                            </span>
+                        </td>
+                        
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center space-x-2">
+                                <input type="number" min="1" value="10" th:id="'restock-qty-' + ${product.id}" 
+                                       class="w-16 p-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <button type="button" 
+                                        th:onclick="'restockProduct(' + ${product.id} + ', this)'"
+                                        class="bg-green-500 text-white px-3 py-2 rounded-lg font-bold hover:bg-green-600 transition-colors">
+                                    進貨
+                                </button>
+                            </div>
+                        </td>
+                        
+                        <td class="p-4 text-center">
+                            <div class="flex flex-col space-y-2 items-center">
+                                <a th:href="@{/product/edit/{id}(id=${product.id})}" 
+                                   class="w-24 text-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition-colors font-bold text-sm">
+                                    ✏️ 修改
+                                </a>
+                                
+                                <form th:action="@{/product/toggle-active/{id}(id=${product.id})}" method="POST">
+                                    <button type="submit" 
+                                            th:class="${product.active} ? 'w-24 text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-lg transition-colors font-bold' : 'w-24 text-sm bg-gray-800 hover:bg-black text-white px-3 py-1.5 rounded-lg transition-colors font-bold'"
+                                            th:text="${product.active} ? '🛑 下架' : '🟢 上架'">
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="toast-notification">✅ 補貨成功！庫存已更新。</div>
+
+    <script>
+        function restockProduct(productId, btnElement) {
+            const qtyInput = document.getElementById('restock-qty-' + productId);
+            const addQuantity = qtyInput.value;
+
+            if(addQuantity <= 0) {
+                alert("請輸入大於 0 的數量");
+                return;
+            }
+
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "處理中";
+            btnElement.disabled = true;
+
+            fetch('/product/restock', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'productId': productId,
+                    'addQuantity': addQuantity
+                })
+            })
+            .then(response => response.text())
+            .then(data => {
+                const result = String(data).trim().replace(/"/g, '');
+                
+                if (result.includes('SUCCESS')) {
+                    const newStock = result.split(':')[1] || parseInt(document.getElementById('stock-display-' + productId).innerText) + parseInt(addQuantity);
+                    
+                    const stockDisplay = document.getElementById('stock-display-' + productId);
+                    stockDisplay.innerText = newStock;
+                    
+                    if(newStock > 5) {
+                        stockDisplay.className = 'text-gray-700 font-bold text-lg';
+                    }
+
+                    const toast = document.getElementById('toast-notification');
+                    toast.classList.add('show');
+                    setTimeout(() => { toast.classList.remove('show'); }, 2500);
+                    
+                    qtyInput.value = 10;
+                } else {
+                    alert("❌ 補貨失敗：" + result);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("連線異常，請稍後再試。");
+            })
+            .finally(() => {
+                btnElement.innerText = originalText;
+                btnElement.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

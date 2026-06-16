@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>我的歷史訂單明細 - JAVA CORE SHOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow h-16 flex justify-between items-center px-8 sticky top-0 z-50">
+        <a th:href="@{/}" class="text-xl font-black text-gray-950 tracking-wider">🛒 JAVA CORE SHOP</a>
+        <a th:href="@{/}" class="text-sm font-bold text-gray-600 hover:text-gray-950">繼續購物</a>
+    </nav>
+
+	<main class="max-w-4xl w-full mx-auto px-8 py-12 flex-grow">
+	    <h2 class="text-2xl font-black text-gray-950 mb-8 tracking-wide">📦 我的歷史訂單明細</h2>
+
+	    <div th:if="${#lists.isEmpty(orders)}" class="text-center py-24 text-gray-400 text-sm">
+	        妥協不是你的風格，快去首頁帶走一些質感單品吧！
+	    </div>
+
+	    <div th:if="${!#lists.isEmpty(orders)}" th:each="order : ${orders}" class="bg-white border border-gray-200 rounded-2xl p-6 mb-6 shadow-sm">
+	        
+	        <div class="flex flex-wrap justify-between items-center border-b border-gray-100 pb-4 mb-4 text-sm">
+	            <div>
+	                <span class="text-xs font-bold text-gray-400 block uppercase">訂單單號</span>
+	                <span class="font-black text-gray-950" th:text="'#' + ${order.id}">#1001</span>
+	            </div>
+	            <div>
+	                <span class="text-xs font-bold text-gray-400 block">收件人資訊</span>
+	                <span class="text-gray-600 font-medium" th:text="${order.receiverName} + ' ｜ ' + ${order.receiverPhone}">張三 0912345678</span>
+	            </div>
+	            <div>
+	                <span class="text-xs font-bold text-gray-400 block">收件地址</span>
+	                <span class="text-gray-600 font-medium" th:text="${order.receiverAddress}">台北市信義路</span>
+	            </div>
+	            <div class="text-right">
+	                <span class="text-xs font-bold text-gray-400 block">該筆結帳總額</span>
+	                <span class="text-lg font-black text-gray-950" th:text="'NT$ ' + ${order.totalPrice}">NT$ 0</span>
+	            </div>
+	        </div>
+
+	        <div class="space-y-2">
+	            <div th:each="detail : ${order.orderDetails}" class="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl hover:bg-gray-100 transition-colors">
+	                <div class="flex items-center space-x-4">
+	                    <span class="font-bold text-gray-950 text-sm" th:text="${detail.product.name}">質感無線耳機</span>
+	                    <span class="text-xs text-gray-400" th:text="'(單價: NT$ ' + ${detail.product.price} + ')'">(單價: NT$ 0)</span>
+	                </div>
+	                <div class="text-sm font-black text-gray-700" th:text="'x ' + ${detail.quantity} + ' 件'">x 2 件</div>
+	            </div>
+	        </div>
+	    </div>
+
+	    <div th:if="${!#lists.isEmpty(orders)}" class="text-right border-t pt-6 mt-8">
+	        <span class="text-gray-500 text-sm font-medium">全站累積消費總額：</span>
+	        <span class="text-2xl font-black text-gray-950 ml-2" th:text="'NT$ ' + ${totalSpend}">NT$ 0</span>
+	    </div>
+	</main>
+
+    <footer class="bg-white border-t py-6 text-center text-xs text-gray-400">&copy; 2026 Java High-End Shop History.</footer>
+</body>
+</html>

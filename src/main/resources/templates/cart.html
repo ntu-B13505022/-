@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>您的購物車 - JAVA CORE SHOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+    <nav class="bg-white shadow h-16 flex justify-between items-center px-8 sticky top-0 z-50">
+        <a th:href="@{/}" class="text-xl font-black text-gray-950 tracking-wider">🛒 JAVA CORE SHOP</a>
+        <div class="flex items-center space-x-6">
+            <a th:href="@{/}" class="text-sm font-bold text-gray-600 hover:text-gray-950">繼續購物</a>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl w-full mx-auto px-6 py-12 flex-grow">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-black text-gray-950">🛒 購物車清單</h1>
+            <span class="bg-gray-900 text-white px-4 py-1.5 rounded-full text-xs font-bold" 
+                  th:text="'共 ' + (${session.cart != null} ? ${session.cart.size()} : 0) + ' 件商品'">
+                  共 0 件商品
+            </span>
+        </div>
+
+        <div th:if="${error != null}" class="bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-sm font-bold mb-6">
+            ⚠️ <span th:text="${error}"></span>
+        </div>
+
+        <div th:if="${session.cart == null or #lists.isEmpty(session.cart)}" class="text-center py-24 bg-white border rounded-3xl shadow-sm text-gray-400 text-sm">
+            📭 您的購物車目前空空如也。
+        </div>
+
+        <div th:if="${session.cart != null and !#lists.isEmpty(session.cart)}" class="space-y-8">
+            <div class="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden">
+				<div th:each="item : ${cartItems}" class="flex items-center justify-between p-6 border-b last:border-b-0 hover:bg-gray-50 transition-colors">
+				    <div class="flex items-center space-x-4">
+				        <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+				            <img th:src="${item.product.imageUrl}" class="w-full h-full object-cover">
+				        </div>
+				        <div>
+				            <h3 class="font-bold text-gray-950 text-base" th:text="${item.product.name}">商品名稱</h3>
+				            <p class="text-gray-400 text-xs mt-0.5">
+				                單價: $<span th:text="${item.product.price}">0</span> 
+				                <span class="mx-2">|</span> 
+				                數量: <span th:text="${item.quantity}">0</span>
+				            </p>
+				        </div>
+				    </div>
+					<div class="flex items-center justify-between">
+					    <form th:action="@{/cart/remove}" method="POST" class="inline">
+					        <input type="hidden" name="productId" th:value="${item.product.id}">
+					        
+					        <button type="submit" 
+					                class="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all duration-200">
+					            🗑️ 移除商品
+					        </button>
+					    </form>
+					</div>
+				</div>
+            </div>
+			
+			<div class="text-xl font-bold">
+			    總金額: $ <span th:text="${#aggregates.sum(cartItems.![product.price * quantity]) ?: 0}">0</span>
+			</div>
+			
+			<div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm max-w-md mx-auto mt-8">
+			    <h2 class="text-lg font-black text-gray-950 mb-4 flex items-center gap-2">
+			        📋 填寫收件資訊
+			    </h2>
+			    
+			    <form th:action="@{/order/checkout}" method="POST" class="space-y-4">
+			        
+			        <div>
+			            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+			                收件人姓名
+			            </label>
+			            <input type="text" 
+			                   name="receiverName" 
+			                   required 
+			                   placeholder="請輸入收件人真實姓名"
+			                   class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-gray-400 text-gray-900 shadow-inner">
+			        </div>
+
+			        <div>
+			            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+			                聯絡電話
+			            </label>
+			            <input type="text" 
+			                   name="receiverPhone" 
+			                   required 
+			                   placeholder="請輸入手機號碼"
+			                   class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-gray-400 text-gray-900 shadow-inner">
+			        </div>
+
+			        <div>
+			            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+			                寄送地址
+			            </label>
+			            <input type="text" 
+			                   name="receiverAddress" 
+			                   required 
+			                   placeholder="請輸入完整外送/寄送地址"
+			                   class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder-gray-400 text-gray-900 shadow-inner">
+			        </div>
+
+			        <button type="submit" 
+			                class="w-full bg-gray-950 hover:bg-gray-800 text-white py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all transform active:scale-[0.99] shadow-md mt-6">
+			            🛒 確認下單結帳
+			        </button>
+			    </form>
+			</div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t py-6 text-center text-xs text-gray-400 mt-16">&copy; 2026 Java Shop System.</footer>
+</body>
+</html>

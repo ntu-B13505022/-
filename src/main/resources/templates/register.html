@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>建立新帳號 - 質感電商</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+
+    <nav class="bg-white shadow h-16 flex justify-between items-center px-8">
+        <span class="text-xl font-bold text-gray-800">🛒 電商系統</span>
+        <div class="space-x-6">
+            <a th:href="@{/}" class="text-gray-600 hover:text-gray-900">返回首頁</a>
+        </div>
+    </nav>
+
+    <div class="flex-grow flex items-center justify-center py-12 px-4">
+        <div class="max-w-md w-full bg-white border border-gray-200 p-8 rounded-2xl shadow-sm">
+            
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-black text-gray-900">加入我們</h2>
+                <p class="text-gray-500 text-sm mt-1">只需填些基本資料，即可開啟購物與上架功能</p>
+            </div>
+
+            <div th:if="${registerError}" class="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl">
+                ⚠️ <span th:text="${registerError}">錯誤訊息</span>
+            </div>
+
+            <form th:action="@{/register}" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">使用者帳號</label>
+                    <input type="text" name="username" required placeholder="請設定您的登入帳號"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">電子郵件 (Email)</label>
+                    <input type="email" name="email" required placeholder="example@email.com"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">密碼</label>
+                    <input type="password" name="password" required placeholder="請設定您的登入密碼"
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 transition-all">
+                </div>
+
+                <button type="submit" class="w-full bg-gray-900 text-white py-3 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mt-4">
+                    同意條款並註冊
+                </button>
+                
+                <div class="text-center mt-4">
+                    <a th:href="@{/login}" class="text-xs text-blue-600 hover:underline">已經有帳號了？立即登入</a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</body>
+</html>
